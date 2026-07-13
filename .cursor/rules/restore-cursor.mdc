@@ -1,0 +1,7 @@
+---
+description: Canonical restore-cursor safety and development instructions
+alwaysApply: true
+---
+
+Read and follow `AGENTS.md` as the canonical repository instructions before doing
+any work. In live recovery mode, never execute a command containing `--apply`.

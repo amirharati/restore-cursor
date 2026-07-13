@@ -4,6 +4,112 @@
 
 Cursor stores chat bodies in a global SQLite database, while visible projects are keyed by internal workspace IDs. If Cursor opens the same repo through a new path, symlink, copied folder, Dropbox path, renamed folder, or recovered session, the chat history can look missing even though the data still exists.
 
+AI agents starting without conversation context must read [`AGENTS.md`](AGENTS.md)
+before assisting with recovery or changing this project. It contains the current
+handoff, shared-control rules, and development checks.
+
+> **Important:** This is an unofficial recovery tool for Cursor's private internal
+> storage. Cursor can change tables, JSON fields, workspace state, and visibility
+> rules without notice. A command that worked with an older Cursor release is not
+> automatically safe for the current release. Never begin with `--apply`.
+
+## Choose How To Use It
+
+### Recommended: AI-Assisted Shared Control
+
+Use an AI agent from Codex, VS Code, a terminal assistant, or another non-Cursor
+environment. The agent reads the repository, runs or interprets read-only checks,
+explains each checkpoint, and keeps a ledger of workspace, composer, and operation
+IDs. The user personally types every command containing `--apply` and checks the
+real Cursor UI.
+
+Start the agent with:
+
+```text
+Read and follow AGENTS.md before doing any work. Help me recover Cursor history
+one checkpoint at a time. You may run read-only commands, but never run a command
+containing --apply. I will type every changing command myself.
+```
+
+This division matters because Cursor must be fully quit during writes, source
+selection requires human recognition of the project and transcripts, and database
+verification cannot prove that the history is visible in the UI.
+
+See the [AI-assisted recovery guide](docs/ai-assisted-recovery.md) for the complete
+prompt, role boundaries, recovery ledger, and failure procedure.
+
+### Optional: Manual Operation
+
+The CLI can be used without an AI agent. Follow the
+[general restore playbook](docs/restore-playbook.md) from start to finish, run every
+preview before its applied form, record every operation ID, and compare output with
+the documented expectations. Stop if a field, count, path, title, or UI result is
+unexpected. Do not improvise a SQLite update.
+
+Manual use does not remove any safety checkpoint: one-chat canary, Cursor fully
+quit for writes, verification while closed, real history-list inspection, and
+deliberate snapshot retention are still required.
+
+## Schema Freshness Gate
+
+Treat the tool as **unvalidated** when Cursor has updated since the last successful
+recovery, the tool has not been used recently, the installed version is unknown,
+or current output differs from the documentation. Before touching live data:
+
+1. Read `AGENTS.md` and the recovery documentation.
+2. Preserve unrelated repository changes and inspect `git status --short`.
+3. Run the complete fixture test suite:
+
+```bash
+cd ~/projects/restore-cursor
+env PYTHONPATH=src python3 -m unittest discover -s tests -v
+```
+
+4. Install the tested repository version and confirm which runtime is active:
+
+```bash
+./install.sh
+restore-cursor --version
+```
+
+5. Run only read-only checks against the current Cursor installation:
+
+```bash
+restore-cursor doctor
+cd /absolute/path/to/the/current/project
+restore-cursor project .
+```
+
+6. Inspect candidate headers, embedded composer data, body counts, workspace
+   identities, and target workspace UI state before permitting any write.
+7. If the schema or behavior differs, stop. Let the AI agent inspect and update the
+   code, fixtures, manifest compatibility, verification logic, and documentation.
+   Rerun the tests, reinstall, and repeat every read-only check from the beginning.
+8. Proceed only when a one-chat dry run is fully understood and all safety fields
+   match the current database.
+
+Passing fixture tests is necessary but not sufficient: fixtures test behavior we
+already know about, while read-only live inspection detects Cursor changes we have
+not modeled yet. Conversely, never “test” a schema theory by writing to the live
+database. Add or update fixtures first.
+
+## Recovery At A Glance
+
+1. Confirm tool version, tests, and current Cursor schema using the freshness gate.
+2. Resolve the current project folder and candidate source workspaces.
+3. Inspect activity, body sizes, and a bounded recognizable transcript.
+4. Preview exactly one non-empty top-level chat as a canary.
+5. Fully quit Cursor; the user manually applies the canary.
+6. Verify the operation while Cursor remains closed.
+7. Open Cursor and confirm a real history entry plus a readable transcript.
+8. Preview the remaining `--top-level-only --nonempty` batch.
+9. Quit Cursor; the user manually applies and verifies the batch.
+10. Open several old and recent chats, retain snapshots, and clean them up only
+    after a deliberate retention period.
+
+If any checkpoint fails, do not continue to the next write. Preview logical undo
+for that exact operation and investigate.
+
 ## Safety Model
 
 - Read-only commands use SQLite immutable mode.
@@ -19,7 +125,9 @@ Cursor stores chat bodies in a global SQLite database, while visible projects ar
 - Undo moves only the chat IDs recorded by that operation. Existing target chats
   are not affected, and a partial or ambiguous undo is refused.
 - Snapshot cleanup retains the small manifest, so logical undo stays available.
-- You should fully quit Cursor before running `restore --apply`.
+- Fully quit Cursor before any applied recovery or undo command.
+- `doctor` checks required tables, but cannot guarantee compatibility with every
+  future Cursor schema or UI behavior.
 
 ## Install The Command
 
@@ -52,7 +160,7 @@ refuse unsafe paths and avoid replacing or deleting unrelated commands.
 Set `RESTORE_CURSOR_PYTHON` only when you need a non-default Python executable.
 `RESTORE_CURSOR_INSTALL_ROOT` and `XDG_BIN_HOME` can override installation paths.
 
-## Common Commands
+## Manual Command Reference
 
 The normal workflow starts with the project folder. From inside the project:
 
@@ -198,12 +306,14 @@ restore-cursor restore \
   --apply
 ```
 
-The apply command prints an operation ID. After reopening Cursor and checking the
-result, verify the exact recorded headers in the database:
+The apply command prints an operation ID. Keep Cursor closed and verify the exact
+recorded headers and embedded identities first:
 
 ```bash
 restore-cursor verify <operation-id>
 ```
+
+Then reopen Cursor and check both the history list and several transcripts.
 
 Preview an undo at any time:
 

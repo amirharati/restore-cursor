@@ -115,14 +115,16 @@ protects against a typo that would hide the chats again.
 
 ## 7. Verify
 
-Open Cursor on the project and check the chat list.
-
-Also verify every recorded header and embedded identity is now associated with the
-target:
+Keep Cursor closed and verify every recorded header and embedded identity is now
+associated with the target:
 
 ```bash
 restore-cursor verify <operation-id>
 ```
+
+Only after verification succeeds, open Cursor on the project. Confirm the chat is
+present in the history list and that its transcript opens. An already-open chat
+without a history entry is not a successful canary.
 
 Do not clean up its emergency snapshot unless this reports `Verification: OK` and
 the expected chats are visible in Cursor.

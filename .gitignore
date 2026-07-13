@@ -1,0 +1,21 @@
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Installer staging directories, if custom paths point inside the repository.
+.restore-cursor.install.*/
+.restore-cursor.previous.*/
+
+# Never commit Cursor database backups.
+*.vscdb
+*.vscdb-*
+*.vscdb.*
+*.bak

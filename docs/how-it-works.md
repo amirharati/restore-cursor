@@ -190,14 +190,14 @@ logical undo. Retaining the manifest does not retain a full copy of the chat dat
 
 ## Recommended Workflow
 
-1. Quit Cursor.
-2. Run `restore-cursor doctor`.
-3. Run `restore-cursor workspaces`.
-4. Search for the missing history: `restore-cursor search V3 workbench`.
-5. Inspect the source workspace with `--with-bodies`.
-6. Dry-run restore.
-7. Apply restore and note its operation ID.
-8. Open Cursor and verify.
+1. Run `restore-cursor --version` and `restore-cursor doctor`.
+2. Resolve the current project and source candidates.
+3. Inspect the source with `--with-bodies` and preview a known transcript.
+4. Dry-run one top-level chat as a canary.
+5. Quit Cursor, apply the canary, and note its operation ID.
+6. Verify while Cursor is closed, then confirm the canary in the real history list.
+7. Dry-run and apply the filtered main-chat batch.
+8. Verify while Cursor is closed, then inspect several chats in Cursor.
 9. Keep the newest emergency snapshots for a chosen retention period.
 10. Use managed cleanup so old snapshots do not accumulate.
 

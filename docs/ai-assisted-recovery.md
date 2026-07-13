@@ -9,6 +9,15 @@ Use the agent from Codex, VS Code, a terminal assistant, or another non-Cursor
 environment. Cursor must be fully quit during writes, so an agent running inside
 Cursor is a poor choice for the apply stages.
 
+## Cold-Start Rule Discovery
+
+The canonical repository rule is [`AGENTS.md`](../AGENTS.md). No instruction
+filename is recognized by every agent product, so the repository also provides
+small discovery files for Claude, Gemini, GitHub Copilot, and Cursor. Those files
+only point to `AGENTS.md`; they do not duplicate policy. The README also directs
+unknown agents there. If an agent does not automatically load repository rules,
+begin the session with: “Read and follow `AGENTS.md` before doing any work.”
+
 ## Division Of Responsibility
 
 | Participant | Responsibility |
