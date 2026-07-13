@@ -91,7 +91,9 @@ Successful batch operation: 20260713T182256Z-bcec8dd3
 Batch selection: 66 non-empty top-level chats
 UI result: user confirmed the full history is visible and working
 Intentionally excluded: 18 subagents and one empty top-level skeleton
-Pending checkpoint: list and classify backups before deleting any snapshot
+Snapshot cleanup: all seven emergency snapshots deleted; manifests retained
+Full rollback availability: none; scoped logical undo metadata remains
+Pending checkpoint: none; continue normal use and revalidate after Cursor updates
 ```
 
 The successful recovery used version `0.7.0`. It updated and verified all three

@@ -457,6 +457,22 @@ For this successful run, substitute `20260713T181850Z-351dbe38` and
 undone operation snapshots can be reviewed and removed separately; never delete a
 snapshot merely because its operation ID looks old.
 
+### Cleanup Result For This Run
+
+After the recovered history was tested in Cursor, all five obsolete snapshots were
+deleted first. The successful batch snapshot was deleted next, while the successful
+canary snapshot remained as the final emergency fallback. The canary snapshot was
+deleted last after explicit confirmation of the consequence.
+
+Final read-only audit:
+
+```text
+All seven operations: snapshot deleted, disk_bytes 0
+Backup directory: 88K
+Full-database emergency rollback: no longer available
+Small manifests and scoped logical undo metadata: retained
+```
+
 ## Step 13: Leave Subagents And Other Sources Alone
 
 Do not restore the recent 13-header source merely because its `any_activity` is
