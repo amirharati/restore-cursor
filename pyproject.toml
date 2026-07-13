@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "restore-cursor"
+version = "0.7.0"
+description = "Inspect and safely re-associate Cursor chat history between workspace IDs."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Amir" }]
+dependencies = []
+
+[project.scripts]
+restore-cursor = "restore_cursor.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
