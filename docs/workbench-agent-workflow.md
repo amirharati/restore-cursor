@@ -435,7 +435,12 @@ restore-cursor backups
 ```
 
 Keep both snapshots until both operations verify successfully and the chats look
-correct in Cursor. Then preview removing each operation's large files:
+correct in Cursor. For future recoveries, remove obsolete failed, undone, and
+superseded snapshots first; retain one successful snapshot for a default 14-day
+fallback period. APFS clone sizes are apparent and shared, so use filesystem free
+space before and after cleanup to measure actual reclaimed storage.
+
+Then preview removing each operation's large files:
 
 ```bash
 restore-cursor delete-backup <canary-operation-id>

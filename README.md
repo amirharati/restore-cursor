@@ -329,6 +329,12 @@ List snapshots and their reported allocated blocks:
 restore-cursor backups
 ```
 
+For APFS clones, `disk_bytes` and `du` report logical/allocated blocks and can
+count the same shared blocks once per clone. They do not measure unique physical
+space. Compare `df -h /Users/$USER` before and after cleanup to see actual reclaimed
+space. A fresh clone usually starts small physically, but its unique cost can grow
+as the live Cursor database changes.
+
 After verification, remove one large emergency snapshot while retaining its tiny
 manifest and logical undo record:
 
@@ -337,12 +343,25 @@ restore-cursor delete-backup <operation-id>
 restore-cursor delete-backup <operation-id> --apply
 ```
 
-Preview a retention cleanup that always keeps the two newest snapshots:
+Recommended retention policy:
+
+1. Keep the canary and batch snapshots during active recovery.
+2. After database and UI verification, manually remove failed, undone, and
+   superseded snapshots one at a time.
+3. Keep one successful snapshot as a short-term emergency fallback.
+4. Review that final snapshot after 14 days. Delete it manually when normal Cursor
+   use remains stable, or retain it longer after checking actual free space.
+5. Keep the tiny manifests indefinitely.
+
+Preview routine cleanup while always preserving the newest snapshot:
 
 ```bash
-restore-cursor cleanup --older-than 30 --keep-last 2
-restore-cursor cleanup --older-than 30 --keep-last 2 --apply
+restore-cursor cleanup --older-than 14 --keep-last 1
+restore-cursor cleanup --older-than 14 --keep-last 1 --apply
 ```
+
+During an active recovery, use `--keep-last 2` instead. Cleanup intentionally does
+not remove failed-operation snapshots automatically; classify those manually.
 
 If macOS does not allow the process check, quit Cursor yourself and add
 `--confirm-cursor-quit` to an applied `restore` or `undo`. This flag does not

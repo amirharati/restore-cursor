@@ -37,6 +37,11 @@ Use shared-control mode when assisting with live Cursor recovery.
 - An already-open chat without a history entry is a failed canary.
 - Do not continue after any failed or ambiguous checkpoint. Preview logical undo.
 - Do not delete snapshots until database verification and the real UI check pass.
+- Keep two snapshots during active recovery, then one successful fallback for a
+  default 14-day retention period. Remove the final snapshot only after explicit
+  user approval.
+- Treat APFS clone sizes as apparent, not unique physical usage. Use before/after
+  filesystem free space when storage accounting matters.
 - Prefer exact logical undo over a full snapshot rollback. A full rollback can
   revert unrelated Cursor workspaces.
 
@@ -57,7 +62,8 @@ Read-only commands include `--version`, `doctor`, `project`, `search`, `inspect`
 9. Preview the filtered `--top-level-only --nonempty` batch.
 10. Ask the user to quit Cursor and manually apply the batch.
 11. Verify while Cursor remains closed, then check several chats in the UI.
-12. Retain snapshots for a deliberate period and clean them up one by one.
+12. Keep two snapshots during recovery, reduce to one successful fallback after
+    verification, and review that final snapshot after 14 days.
 
 Maintain this ledger in the conversation:
 

@@ -154,6 +154,12 @@ List managed operations and allocated blocks reported by the filesystem:
 restore-cursor backups
 ```
 
+APFS copy-on-write clones can each appear as large as the live database while
+sharing most physical blocks. The listed `disk_bytes` values and `du` output are
+not additive measures of unique storage. Record `df -h /Users/$USER` before and
+after deletion when actual reclaimed space matters. Clone overhead grows as the
+live database diverges from the retained snapshot.
+
 Once the restored chats have been checked in Cursor, preview and delete a specific
 emergency snapshot:
 
@@ -165,15 +171,28 @@ restore-cursor delete-backup <operation-id> --apply
 This deletes only the large snapshot files. It retains `manifest.json`, which is
 small and still supports logical undo.
 
-For routine retention, preview first:
+Use this default retention policy:
+
+1. Keep two snapshots during active recovery: the canary and batch checkpoints.
+2. Once both operations and the real UI are verified, remove failed, undone, and
+   superseded snapshots manually, one operation at a time.
+3. Keep the newest successful snapshot for 14 days as an emergency fallback.
+4. After 14 stable days, preview and manually delete that final snapshot if a full
+   rollback is no longer worth its growing storage cost.
+5. Retain manifests indefinitely; they are small and preserve audit and logical
+   undo metadata.
+
+For routine cleanup, preview first while preserving the newest snapshot:
 
 ```bash
-restore-cursor cleanup --older-than 30 --keep-last 2
-restore-cursor cleanup --older-than 30 --keep-last 2 --apply
+restore-cursor cleanup --older-than 14 --keep-last 1
+restore-cursor cleanup --older-than 14 --keep-last 1 --apply
 ```
 
 Cleanup never deletes incomplete or failed-operation snapshots automatically. It
-also keeps the newest requested number of snapshots regardless of age.
+also keeps the newest requested number of snapshots regardless of age. During an
+active recovery, use `--keep-last 2`. The final retained snapshot must be deleted
+with an explicit `delete-backup` command when its retention period ends.
 
 ## Recovery Layers
 
